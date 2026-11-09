@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Ensure proper mobile viewport scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Happy Birthday!</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      /* Prevents highlight tap box on mobile touch */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #ffd1dc 0%, #ffe3ec 100%);
+      /* dvh handles dynamic mobile browser address bars */
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      text-align: center;
+      color: #4a2e35;
+      position: relative;
+      padding: 1rem;
+    }
+
+    /* Floating Cute Cake Pattern Background */
+    .cake-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-cake {
+      position: absolute;
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      opacity: 0.25;
+      animation: floatCake 12s infinite linear;
+      user-select: none;
+    }
+
+    .bg-cake:nth-child(1)  { left: 5%;  animation-duration: 10s; animation-delay: 0s; }
+    .bg-cake:nth-child(2)  { left: 18%; animation-duration: 14s; animation-delay: -3s; }
+    .bg-cake:nth-child(3)  { left: 32%; animation-duration: 11s; animation-delay: -6s; }
+    .bg-cake:nth-child(4)  { left: 45%; animation-duration: 15s; animation-delay: -2s; }
+    .bg-cake:nth-child(5)  { left: 58%; animation-duration: 9s;  animation-delay: -7s; }
+    .bg-cake:nth-child(6)  { left: 72%; animation-duration: 13s; animation-delay: -4s; }
+    .bg-cake:nth-child(7)  { left: 85%; animation-duration: 12s; animation-delay: -1s; }
+    .bg-cake:nth-child(8)  { left: 12%; animation-duration: 13s; animation-delay: -8s; }
+    .bg-cake:nth-child(9)  { left: 62%; animation-duration: 14s; animation-delay: -9s; }
+
+    @keyframes floatCake {
+      0% {
+        transform: translateY(105vh) rotate(0deg);
+      }
+      100% {
+        transform: translateY(-15vh) rotate(360deg);
+      }
+    }
+
+    /* Interactive Surprise Envelope Container */
+    .envelope-wrapper {
+      position: absolute;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.6s ease-in-out;
+    }
+
+    .envelope {
+      width: clamp(240px, 75vw, 300px);
+      height: clamp(160px, 50vw, 200px);
+      background: #ff7597;
+      border-radius: 12px;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(255, 117, 151, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Flap of the envelope */
+    .envelope::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: clamp(120px, 37.5vw, 150px) solid transparent;
+      border-right: clamp(120px, 37.5vw, 150px) solid transparent;
+      border-top: clamp(90px, 28vw, 115px) solid #ff5e7e;
+      transform-origin: top;
+      transition: transform 0.5s ease;
+      z-index: 2;
+    }
+
+    /* Envelope Wax Seal Stamp */
+    .seal {
+      width: 50px;
+      height: 50px;
+      background: #e84393;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      z-index: 3;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    .tap-hint {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ff4757;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 18px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(255, 182, 193, 0.5);
+      animation: bounce 1.2s infinite;
+    }
+
+    /* Hidden State for Main Card */
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1.2rem, 4vw, 2rem);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(255, 182, 193, 0.4);
+      border: 2px solid #ffccd5;
+      max-width: 420px;
+      width: 100%;
+      z-index: 10;
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Opened Envelope State */
+    .envelope-wrapper.open .envelope::before {
+      transform: rotateX(180deg);
+      z-index: 0;
+    }
+
+    .envelope-wrapper.hide {
+      opacity: 0;
+      transform: scale(0.2) translateY(-100px);
+      pointer-events: none;
+    }
+
+    .card.show {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 6vw, 2.2rem);
+      color: #ff5e7e;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: clamp(0.9rem, 3.5vw, 1.05rem);
+      color: #705259;
+      margin-bottom: 1.2rem;
+      line-height: 1.4;
+    }
+
+    .cake {
+      font-size: clamp(3rem, 12vw, 4rem);
+      cursor: pointer;
+      user-select: none;
+      display: inline-block;
+      margin-bottom: 0.75rem;
+      transition: transform 0.2s ease;
+      filter: drop-shadow(0 4px 6px rgba(255, 105, 180, 0.2));
+    }
+
+    .cake:hover, .cake:active {
+      transform: scale(1.15) rotate(-5deg);
+    }
+
+    .wish-box {
+      min-height: 52px;
+      margin-bottom: 1.2rem;
+      padding: 10px 14px;
+      background: #fff5f8;
+      border: 2px dashed #ffb6c1;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: clamp(0.85rem, 3.2vw, 0.95rem);
+      color: #e84393;
+      transition: all 0.3s ease;
+    }
+
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (min-width: 380px) {
+      .btn-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .btn-container button {
+        flex: 1 1 calc(50% - 5px);
+      }
+      .btn-container button.music-btn {
+        flex: 1 1 100%;
+      }
+    }
+
+    button {
+      background: #ff7597;
+      color: white;
+      border: none;
+      padding: 14px 18px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 117, 151, 0.3);
+      transition: all 0.2s ease;
+      width: 100%;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(0.97);
+      background: #ff5e7e;
+    }
+
+    button.music-btn {
+      background: #ff85a1;
+      box-shadow: 0 4px 12px rgba(255, 133, 161, 0.3);
+    }
+
+    button.music-btn:active {
+      background: #fd6b8d;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Background Cakes -->
+  <div class="cake-bg">
+    <div class="bg-cake">🎂</div>
+    <div class="bg-cake">🍰</div>
+    <div class="bg-cake">🧁</div>
+    <div class="bg-cake">🎂</div>
+    <div class="bg-cake">🍰</div>
+    <div class="bg-cake">🧁</div>
+    <div class="bg-cake">🎂</div>
+    <div class="bg-cake">🍰</div>
+    <div class="bg-cake">🧁</div>
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Big Surprise Envelope -->
+  <div class="envelope-wrapper" id="envelopeWrapper" onclick="openEnvelope()">
+    <div class="envelope">
+      <div class="seal">💌</div>
+    </div>
+    <div class="tap-hint">Tap to Open Your Surprise! 🎁</div>
+  </div>
+
+  <!-- Birthday Card -->
+  <div class="card" id="birthdayCard">
+    <div class="cake" id="cake" onclick="blowCandle()">🎂</div>
+    <h1 id="title">Happy Birthday, Jam! 💕</h1>
+    <p id="subtitle">Tap the cake to blow out candles, or play the song below!</p>
+    
+    <div class="wish-box" id="wish">Make a wish! ✨</div>
+    
+    <div class="btn-container">
+      <button class="music-btn" id="musicBtn" onclick="toggleMusic()">🎵 Play Song</button>
+      <button onclick="triggerSurprise()">Pop Confetti 🎉</button>
+      <button onclick="newWish()">Get a Wish 🎁</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio Synthesizer (Happy Birthday Tune)
+    let audioCtx = null;
+    let isPlaying = false;
+    let musicTimeout = null;
+
+    const notes = [
+      { note: 'G4', duration: 0.4 }, { note: 'G4', duration: 0.4 },
+      { note: 'A4', duration: 0.8 }, { note: 'G4', duration: 0.8 },
+      { note: 'C5', duration: 0.8 }, { note: 'B4', duration: 1.2 },
+      
+      { note: 'G4', duration: 0.4 }, { note: 'G4', duration: 0.4 },
+      { note: 'A4', duration: 0.8 }, { note: 'G4', duration: 0.8 },
+      { note: 'D5', duration: 0.8 }, { note: 'C5', duration: 1.2 },
+      
+      { note: 'G4', duration: 0.4 }, { note: 'G4', duration: 0.4 },
+      { note: 'G5', duration: 0.8 }, { note: 'E5', duration: 0.8 },
+      { note: 'C5', duration: 0.8 }, { note: 'B4', duration: 0.8 },
+      { note: 'A4', duration: 1.2 },
+      
+      { note: 'F5', duration: 0.4 }, { note: 'F5', duration: 0.4 },
+      { note: 'E5', duration: 0.8 }, { note: 'C5', duration: 0.8 },
+      { note: 'D5', duration: 0.8 }, { note: 'C5', duration: 1.4 }
+    ];
+
+    const freqs = {
+      'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25,
+      'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99
+    };
+
+    function openEnvelope() {
+      const envelopeWrapper = document.getElementById('envelopeWrapper');
+      const card = document.getElementById('birthdayCard');
+      
+      // Animate envelope opening
+      envelopeWrapper.classList.add('open');
+
+      setTimeout(() => {
+        envelopeWrapper.classList.add('hide');
+        card.classList.add('show');
+        burstConfetti();
+        toggleMusic(); // Auto-start birthday tune on reveal
+      }, 500);
+    }
+
+    function playTone(freq, duration, startTime) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, startTime);
+      
+      gain.gain.setValueAtTime(0.2, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration - 0.05);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    }
+
+    function toggleMusic() {
+      const musicBtn = document.getElementById('musicBtn');
+      
+      if (isPlaying) {
+        stopMusic();
+        return;
+      }
+
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      isPlaying = true;
+      musicBtn.textContent = '⏸ Pause Song';
+
+      let now = audioCtx.currentTime;
+      let totalDuration = 0;
+
+      notes.forEach((item) => {
+        playTone(freqs[item.note], item.duration, now + totalDuration);
+        totalDuration += item.duration * 0.75;
+      });
+
+      musicTimeout = setTimeout(() => {
+        stopMusic();
+      }, totalDuration * 1000);
+    }
+
+    function stopMusic() {
+      isPlaying = false;
+      if (musicTimeout) clearTimeout(musicTimeout);
+      if (audioCtx) audioCtx.close().then(() => audioCtx = null);
+      document.getElementById('musicBtn').textContent = '🎵 Play Song';
+    }
+
+    // Canvas & Mobile Pixel Ratio Scaling
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function setupCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
+    setupCanvas();
+    window.addEventListener('resize', setupCanvas);
+
+    const colors = ['#ff75a0', '#ffb6c1', '#feca57', '#48dbfb', '#ff9ff3', '#ff4757', '#ffffff'];
+    let confetti = [];
+
+    function createParticle(x, y) {
+      return {
+        x: x !== undefined ? x : Math.random() * width,
+        y: y !== undefined ? y : Math.random() * height - height,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speedY: x !== undefined ? (Math.random() - 0.7) * 10 : Math.random() * 3 + 2,
+        speedX: x !== undefined ? (Math.random() - 0.5) * 10 : Math.random() * 2 - 1,
+        rotation: Math.random() * 360,
+        rotationSpeed: Math.random() * 10 - 5
+      };
+    }
+
+    function burstConfetti(x = width / 2, y = height / 2) {
+      for (let i = 0; i < 50; i++) {
+        confetti.push(createParticle(x, y));
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      confetti.forEach((p, index) => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+        p.rotation += p.rotationSpeed;
+        p.speedY += 0.1;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+
+        if (p.y > height) confetti.splice(index, 1);
+      });
+      requestAnimationFrame(render);
+    }
+
+    render();
+
+    // Interactive Functions
+    let candlesBlown = false;
+    const wishes = [
+      "Hope you have an amazing day filled with everything you love. You deserve the best!",
+      "Wishing you another year of great adventures! 🚀",
+      "Hope your day is as sweet and awesome as you are! 💖",
+      "Wishing a very happy birthday to one of my favorite people. Hope this year brings you so much joy!✨"
+    ];
+
+    function blowCandle() {
+      const cake = document.getElementById('cake');
+      const wish = document.getElementById('wish');
+      
+      if (!candlesBlown) {
+        cake.textContent = '🍰';
+        wish.textContent = "You blew out the candles! Wish granted! 🎉";
+        burstConfetti();
+        if (!isPlaying) toggleMusic();
+        candlesBlown = true;
+      } else {
+        cake.textContent = '🎂';
+        wish.textContent = "Candles relit! Blow them out again!";
+        candlesBlown = false;
+      }
+    }
+
+    function triggerSurprise() {
+      burstConfetti();
+    }
+
+    function newWish() {
+      const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
+      document.getElementById('wish').textContent = randomWish;
+      burstConfetti();
+    }
+  </script>
+</body>
+</html>
